@@ -1,8 +1,7 @@
-import React from "react";
-import Game from "./Game";
+import Game from './Game'
 
 const App = () => {
-  return <Game />;
-};
+  return <Game />
+}
 
-export default App;
+export default App
