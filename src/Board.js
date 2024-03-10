@@ -57,6 +57,14 @@ export class BoardInfo {
   }
 }
 
+const StyledBoard = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+`;
+
 const StyledRow = styled.div`
   display: flex;
   flexdirection: row;
@@ -66,7 +74,7 @@ const Board = ({ board, handleTileMouseDown, handleTileMouseUp }) => {
   const grid = board.generateGrid();
 
   return (
-    <div>
+    <StyledBoard>
       {grid.map((row, rowIndex) => {
         const adjustedRowIndex = rowIndex + board.minRow;
         return (
@@ -91,7 +99,7 @@ const Board = ({ board, handleTileMouseDown, handleTileMouseUp }) => {
           </StyledRow>
         );
       })}
-    </div>
+    </StyledBoard>
   );
 };
 
