@@ -40,19 +40,23 @@ const Game = () => {
     let newBoard: Board = Object.assign(board)
     let queue: Position[] = []
 
-    // Iterate through neighbouring tiles
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        const newRow = row + i
-        const newCol = col + j
-        const newPosition = new Position(newRow, newCol)
+    let offsets = [-1, 0, 1]
 
-        // If no tile exists at this position, mark it for expansion
-        if (!newBoard.hasTile(newPosition)) {
-          queue.push(newPosition)
+    // Iterate through neighbouring tiles
+    offsets.forEach((i) => {
+      offsets.forEach((j) => {
+        if (i !== 0 || j !== 0) {
+          const newRow = row + i
+          const newCol = col + j
+          const newPosition = new Position(newRow, newCol)
+
+          // If no tile exists at this position, mark it for expansion
+          if (!newBoard.hasTile(newPosition)) {
+            queue.push(newPosition)
+          }
         }
-      }
-    }
+      })
+    })
 
     // Add new tiles or update existing ones based on mine generation logic
     queue.forEach((position) => {
@@ -68,15 +72,17 @@ const Game = () => {
         const [row, col] = key.split('_').map(Number)
 
         // Count mines around this tile
-        for (let i = -1; i <= 1; i++) {
-          for (let j = -1; j <= 1; j++) {
-            const neighbourPosition = new Position(row + i, col + j)
-            const neighbourTile = newBoard.getTile(neighbourPosition)
-            if (neighbourTile && neighbourTile.isMine()) {
-              mineCount++
+        offsets.forEach((i) => {
+          offsets.forEach((j) => {
+            if (i !== 0 || j !== 0) {
+              const neighbourPosition = new Position(row + i, col + j)
+              const neighbourTile = newBoard.getTile(neighbourPosition)
+              if (neighbourTile && neighbourTile.isMine()) {
+                mineCount++
+              }
             }
-          }
-        }
+          })
+        })
         tile.adjacentMines = mineCount
       }
     })
@@ -92,32 +98,34 @@ const Game = () => {
     while (queue.length) {
       let [currentRow, currentCol] = queue.shift()!
 
+      let offsets = [-1, 0, 1]
+
       // Check adjacent tiles for expansion
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
-          if (i === 0 && j === 0) continue // Skip the current tile
+      offsets.forEach((i) => {
+        offsets.forEach((j) => {
+          if (i !== 0 || j !== 0) {
+            let newRow = currentRow + i
+            let newCol = currentCol + j
+            let newPosition = new Position(newRow, newCol)
 
-          let newRow = currentRow + i
-          let newCol = currentCol + j
-          let newPosition = new Position(newRow, newCol)
+            // Expand the board around this new position
+            newBoard = expandBoard(newBoard, newRow, newCol)
 
-          // Expand the board around this new position
-          newBoard = expandBoard(newBoard, newRow, newCol)
+            const adjacentTile = newBoard.getTile(newPosition)
 
-          const adjacentTile = newBoard.getTile(newPosition)
+            if (adjacentTile && !adjacentTile.isRevealed && !adjacentTile.isMine() && !adjacentTile.isFlagged) {
+              // Reveal this adjacent tile
+              adjacentTile.isRevealed = true
+              newBoard.addTile(newPosition, adjacentTile)
 
-          if (adjacentTile && !adjacentTile.isRevealed && !adjacentTile.isMine() && !adjacentTile.isFlagged) {
-            // Reveal this adjacent tile
-            adjacentTile.isRevealed = true
-            newBoard.addTile(newPosition, adjacentTile)
-
-            // If the adjacent tile is also empty, add to the queue to reveal its adjacent tiles
-            if (adjacentTile.isEmpty()) {
-              queue.push([newRow, newCol])
+              // If the adjacent tile is also empty, add to the queue to reveal its adjacent tiles
+              if (adjacentTile.isEmpty()) {
+                queue.push([newRow, newCol])
+              }
             }
           }
-        }
-      }
+        })
+      })
     }
 
     return newBoard
@@ -169,6 +177,8 @@ const Game = () => {
     const position = new Position(row, col)
     const tile = board.getTile(position)
 
+    const offsets = [-1, 0, 1]
+
     // If the tile doesn't exist or is not revealed, then do nothing
     if (!tile || !tile.isRevealed) {
       return
@@ -176,31 +186,35 @@ const Game = () => {
 
     // Count the number of adjacent flagged tiles
     let flaggedAdjacent = 0
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        const newRow = row + i
-        const newCol = col + j
-        const newPosition = new Position(newRow, newCol)
-        const newTile = board.getTile(newPosition)
-        if (newTile && newTile.isFlagged) {
-          flaggedAdjacent++
-        }
-      }
-    }
-
-    // If the number of adjacent flags matches the number of adjacent mines, reveal adjacent tiles
-    if (flaggedAdjacent === tile.adjacentMines) {
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
+    offsets.forEach((i) => {
+      offsets.forEach((j) => {
+        if (i !== 0 || j !== 0) {
           const newRow = row + i
           const newCol = col + j
           const newPosition = new Position(newRow, newCol)
           const newTile = board.getTile(newPosition)
-          if (newTile && !newTile.isRevealed && !newTile.isFlagged) {
-            revealTile(newRow, newCol)
+          if (newTile && newTile.isFlagged) {
+            flaggedAdjacent++
           }
         }
-      }
+      })
+    })
+
+    // If the number of adjacent flags matches the number of adjacent mines, reveal adjacent tiles
+    if (flaggedAdjacent === tile.adjacentMines) {
+      offsets.forEach((i) => {
+        offsets.forEach((j) => {
+          if (i !== 0 || j !== 0) {
+            const newRow = row + i
+            const newCol = col + j
+            const newPosition = new Position(newRow, newCol)
+            const newTile = board.getTile(newPosition)
+            if (newTile && !newTile.isRevealed && !newTile.isFlagged) {
+              revealTile(newRow, newCol)
+            }
+          }
+        })
+      })
     }
   }
 

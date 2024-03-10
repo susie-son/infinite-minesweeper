@@ -52,7 +52,7 @@ const TileContent = styled.div<TileContentProps>`
   font-size: 20pt;
 `
 
-enum TileState {
+export enum TileType {
   Reveal,
   Hidden,
   Flag,
@@ -61,10 +61,11 @@ enum TileState {
 
 interface TileComponentProps {
   tile: Tile | undefined
+  neighbourTypes: boolean[]
 }
 
-const TileComponent = ({ tile }: TileComponentProps) => {
-  const [tileState, setTileState] = useState(TileState.None)
+const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
+  const [tileState, setTileState] = useState(TileType.None)
 
   const getTileSymbol = () => {
     if (tile) {
@@ -79,48 +80,47 @@ const TileComponent = ({ tile }: TileComponentProps) => {
 
   const getBorder = (): string => {
     switch (tileState) {
-      case TileState.None:
-      case TileState.Hidden:
-        return '1px solid transparent'
-      default:
+      case TileType.Reveal:
         return '1px groove #ebd6b7'
+      default:
+        return '1px solid transparent'
     }
   }
 
   const getBackground = (): string => {
     switch (tileState) {
-      case TileState.Flag:
+      case TileType.Flag:
         return '#31ffe0'
-      case TileState.Reveal:
+      case TileType.Reveal:
         return '#fff6bd'
-      case TileState.Hidden:
+      case TileType.Hidden:
         return '#31ffe0'
       default:
         return 'transparent'
     }
   }
 
-  const getBorderRadius = (): string => {
-    switch (tileState) {
-      case TileState.Hidden:
-      case TileState.Flag:
-        return '10px'
-      default:
-        return '0px'
-    }
+  const getBorderRadius = (neighbourTypes: boolean[]): string => {
+    let borderRadius = '20px'
+    let topLeft = [0, 1, 3].every((i) => neighbourTypes[i]) ? borderRadius : '0px'
+    let topRight = [1, 2, 4].every((i) => neighbourTypes[i]) ? borderRadius : '0px'
+    let bottomRight = [4, 6, 7].every((i) => neighbourTypes[i]) ? borderRadius : '0px'
+    let bottomLeft = [3, 5, 6].every((i) => neighbourTypes[i]) ? borderRadius : '0px'
+
+    return `${topLeft} ${topRight} ${bottomRight} ${bottomLeft}`
   }
 
   useEffect(() => {
     if (tile) {
-      setTileState(tile.isFlagged ? TileState.Flag : tile.isRevealed ? TileState.Reveal : TileState.Hidden)
+      setTileState(tile.isFlagged ? TileType.Flag : tile.isRevealed ? TileType.Reveal : TileType.Hidden)
     } else {
-      setTileState(TileState.None)
+      setTileState(TileType.None)
     }
   }, [tile, tile?.isRevealed, tile?.isFlagged])
 
   return (
     <TileWrapper $border={getBorder()}>
-      <TileContent $background={getBackground()} $borderRadius={getBorderRadius()}>
+      <TileContent $background={getBackground()} $borderRadius={getBorderRadius(neighbourTypes)}>
         {getTileSymbol()}
       </TileContent>
     </TileWrapper>

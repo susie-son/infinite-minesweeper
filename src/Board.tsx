@@ -65,6 +65,23 @@ export class Board {
 
     return grid
   }
+
+  getNeighbourTypes(row: number, col: number): boolean[] {
+    let neighbours: boolean[] = []
+    const offsets = [-1, 0, 1]
+
+    offsets.forEach((rowOffset) => {
+      offsets.forEach((colOffset) => {
+        if (rowOffset !== 0 || colOffset !== 0) {
+          const neighbourPosition = new Position(row + rowOffset, col + colOffset)
+          const tile = this.getTile(neighbourPosition)
+          neighbours.push(!tile)
+        }
+      })
+    })
+
+    return neighbours
+  }
 }
 
 const BoardWrapper = styled.div`
@@ -104,7 +121,10 @@ const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: Board
                   onMouseUp={(e) => handleTileMouseUp(e, adjustedRowIndex, adjustedColIndex)}
                   onContextMenu={(e) => e.preventDefault()}
                 >
-                  <TileComponent tile={tile} />
+                  <TileComponent
+                    tile={tile}
+                    neighbourTypes={board.getNeighbourTypes(adjustedRowIndex, adjustedColIndex)}
+                  />
                 </div>
               )
             })}
