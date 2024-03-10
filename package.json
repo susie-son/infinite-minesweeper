@@ -42,5 +42,6 @@
   },
   "overrides": {
     "typescript": "^5.4.2"
-  }
+  },
+  "packageManager": "yarn@4.1.1"
 }
