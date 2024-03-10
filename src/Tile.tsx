@@ -29,7 +29,6 @@ const TileWrapper = styled.div<TileWrapperProps>`
   width: 50px;
   height: 50px;
   user-select: none;
-  background: #fff6bd;
   padding: 0px;
   border: ${(props) => props.$border};
 `
@@ -56,6 +55,7 @@ const TileContent = styled.div<TileContentProps>`
 enum TileState {
   Reveal,
   Hidden,
+  Flag,
   None
 }
 
@@ -80,7 +80,8 @@ const TileComponent = ({ tile }: TileComponentProps) => {
   const getBorder = (): string => {
     switch (tileState) {
       case TileState.None:
-        return '1px solid #ffffff'
+      case TileState.Hidden:
+        return '1px solid transparent'
       default:
         return '1px groove #ebd6b7'
     }
@@ -88,31 +89,34 @@ const TileComponent = ({ tile }: TileComponentProps) => {
 
   const getBackground = (): string => {
     switch (tileState) {
+      case TileState.Flag:
+        return '#31ffe0'
       case TileState.Reveal:
-        return '#e6cca5'
+        return '#fff6bd'
       case TileState.Hidden:
-        return '#6ec4c6'
+        return '#31ffe0'
       default:
-        return '#ffffff'
+        return 'transparent'
     }
   }
 
   const getBorderRadius = (): string => {
     switch (tileState) {
-      case TileState.None:
-        return '0px'
+      case TileState.Hidden:
+      case TileState.Flag:
+        return '10px'
       default:
-        return '5px'
+        return '0px'
     }
   }
 
   useEffect(() => {
     if (tile) {
-      setTileState(tile.isRevealed ? TileState.Reveal : TileState.Hidden)
+      setTileState(tile.isFlagged ? TileState.Flag : tile.isRevealed ? TileState.Reveal : TileState.Hidden)
     } else {
       setTileState(TileState.None)
     }
-  }, [tile, tile?.isRevealed])
+  }, [tile, tile?.isRevealed, tile?.isFlagged])
 
   return (
     <TileWrapper $border={getBorder()}>

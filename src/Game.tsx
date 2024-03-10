@@ -2,6 +2,11 @@ import { useState } from 'react'
 import BoardComponent, { Board, Position } from './Board'
 import React from 'react'
 import { Tile } from './Tile'
+import styled from 'styled-components'
+
+const GameWrapper = styled.div`
+  background: #6ec4c6;
+`
 
 const Game = () => {
   const [board, setBoard] = useState(new Board())
@@ -200,9 +205,9 @@ const Game = () => {
   }
 
   return (
-    <div>
+    <GameWrapper>
       <BoardComponent board={board} handleTileMouseDown={handleTileMouseDown} handleTileMouseUp={handleTileMouseUp} />
-    </div>
+    </GameWrapper>
   )
 }
 
