@@ -1,18 +1,28 @@
-import Tile, { TileInfo } from "./Tile";
+import React from "react";
 import styled from "styled-components";
+import TileComponent, { Tile } from "./Tile";
 
 export class Position {
-  constructor(row, col) {
+  row: number;
+  col: number;
+
+  constructor(row: number, col: number) {
     this.row = row;
     this.col = col;
   }
 
-  getKey() {
+  getKey(): string {
     return `${this.row}_${this.col}`;
   }
 }
 
-export class BoardInfo {
+export class Board {
+  minRow: number;
+  maxRow: number;
+  minCol: number;
+  maxCol: number;
+  map: Map<String, Tile>;
+
   // Create starting tile at the origin
   constructor() {
     this.minRow = 0;
@@ -21,10 +31,10 @@ export class BoardInfo {
     this.maxCol = 0;
 
     this.map = new Map();
-    this.addTile(new Position(0, 0), new TileInfo(0));
+    this.addTile(new Position(0, 0), new Tile());
   }
 
-  addTile(position, tile) {
+  addTile(position: Position, tile: Tile) {
     this.minRow = Math.min(this.minRow, position.row);
     this.maxRow = Math.max(this.maxRow, position.row);
     this.minCol = Math.min(this.minCol, position.col);
@@ -32,23 +42,23 @@ export class BoardInfo {
     this.map.set(position.getKey(), tile);
   }
 
-  getTile(position) {
+  getTile(position: Position): Tile | undefined {
     return this.map.get(position.getKey());
   }
 
-  hasTile(position) {
+  hasTile(position: Position): boolean {
     return this.map.has(position.getKey());
   }
 
-  generateGrid() {
-    let grid = [];
+  generateGrid(): (Tile | undefined)[][] {
+    let grid = Array<Array<Tile | undefined>>();
 
     for (let r = this.minRow; r <= this.maxRow; r++) {
-      let rowArray = [];
+      let rowArray = Array<Tile | undefined>();
       for (let c = this.minCol; c <= this.maxCol; c++) {
         const position = new Position(r, c);
         const tile = this.getTile(position);
-        rowArray.push(tile ? tile : null);
+        rowArray.push(tile);
       }
       grid.push(rowArray);
     }
@@ -57,7 +67,7 @@ export class BoardInfo {
   }
 }
 
-const StyledBoard = styled.div`
+const BoardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -65,20 +75,38 @@ const StyledBoard = styled.div`
   min-height: 100vh;
 `;
 
-const StyledRow = styled.div`
+const RowWrapper = styled.div`
   display: flex;
   flexdirection: row;
 `;
 
-const Board = ({ board, handleTileMouseDown, handleTileMouseUp }) => {
-  const grid = board.generateGrid();
+interface BoardComponentProps {
+  board: Board;
+  handleTileMouseDown: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    row: number,
+    col: number,
+  ) => void;
+  handleTileMouseUp: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    row: number,
+    col: number,
+  ) => void;
+}
+
+const BoardComponent = ({
+  board,
+  handleTileMouseDown,
+  handleTileMouseUp,
+}: BoardComponentProps) => {
+  const grid: (Tile | undefined)[][] = board.generateGrid();
 
   return (
-    <StyledBoard>
-      {grid.map((row, rowIndex) => {
+    <BoardWrapper>
+      {grid.map((row, rowIndex: number) => {
         const adjustedRowIndex = rowIndex + board.minRow;
         return (
-          <StyledRow key={adjustedRowIndex}>
+          <RowWrapper key={adjustedRowIndex}>
             {row.map((tile, colIndex) => {
               const adjustedColIndex = colIndex + board.minCol;
               return (
@@ -92,15 +120,15 @@ const Board = ({ board, handleTileMouseDown, handleTileMouseUp }) => {
                   }
                   onContextMenu={(e) => e.preventDefault()}
                 >
-                  <Tile tile={tile} />
+                  <TileComponent tile={tile} />
                 </div>
               );
             })}
-          </StyledRow>
+          </RowWrapper>
         );
       })}
-    </StyledBoard>
+    </BoardWrapper>
   );
 };
 
-export default Board;
+export default BoardComponent;
