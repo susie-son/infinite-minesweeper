@@ -35,8 +35,8 @@ const StyledTileContent = styled.div`
     props.tileStatus === "reveal"
       ? "#e6cca5"
       : props.tileStatus === "hidden"
-      ? "#6ec4c6"
-      : "#ffffff"};
+        ? "#6ec4c6"
+        : "#ffffff"};
   color: #f395a5;
   border-radius: ${(props) => (props.tileStatus === "none" ? "0px" : "5px")};
   font-family: "Madimi One", sans-serif;
