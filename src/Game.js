@@ -174,9 +174,10 @@ const Game = () => {
 
   const handleChord = (row, col) => {
     const position = new Position(row, col);
+    const tile = board.getTile(position);
 
-    // If the tile doesn't exist, then do nothing
-    if (!board.hasTile(position)) {
+    // If the tile doesn't exist or is not revealed, then do nothing
+    if (!tile || !tile.isRevealed) {
       return;
     }
 
