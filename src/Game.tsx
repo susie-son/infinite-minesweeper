@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const GameWrapper = styled.div`
-  background: #6ec4c6;
+  background: linear-gradient(to right bottom, #e4f9fd, #cdecff, #f2e2ff);
 `
 
 const Game = () => {

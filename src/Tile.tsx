@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import {
+  borderColour,
+  hiddenBackgroundColour,
+  hoverBackgroundColour,
+  mineColour1,
+  mineColour2,
+  mineColour3,
+  mineColour4,
+  mineColour5,
+  mineColour6,
+  mineColour7,
+  mineColour8,
+  revealBackgroundColour
+} from './colours'
 
 export class Tile {
   isRevealed: boolean
@@ -33,8 +47,11 @@ const TileWrapper = styled.div<TileWrapperProps>`
 `
 
 interface TileContentProps {
+  $textColour: string
   $background: string
+  $hoverBackground: string
   $borderRadius: string
+  $hoverCursor: string
 }
 
 const TileContent = styled.div<TileContentProps>`
@@ -43,12 +60,20 @@ const TileContent = styled.div<TileContentProps>`
   align-items: center;
   height: 50px;
   background: ${(props) => props.$background};
-  color: #f395a5;
+  color: ${(props) => props.$textColour};
   border-radius: ${(props) => props.$borderRadius};
   font-family: 'Madimi One', sans-serif;
   font-weight: 400;
   font-style: normal;
   font-size: 20pt;
+  &:hover {
+    background: ${(props) => props.$hoverBackground};
+    cursor: ${(props) => props.$hoverCursor};
+  }
+  transition: transform 0.2s;
+  &:active {
+    transform: scale(0.95);
+  }
 `
 
 export enum TileType {
@@ -70,7 +95,7 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
     if (tile) {
       if (tile.isFlagged) return '🚩'
       if (tile.isRevealed) {
-        if (tile.isMine()) return '💣'
+        if (tile.isMine()) return '💔'
         if (!tile.isEmpty()) return tile.adjacentMines
       }
     }
@@ -80,7 +105,7 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
   const getBorder = (): string => {
     switch (tileState) {
       case TileType.Reveal:
-        return '1px groove #ebd6b7'
+        return `1px groove ${borderColour}`
       default:
         return '1px solid transparent'
     }
@@ -88,14 +113,36 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
 
   const getBackground = (): string => {
     switch (tileState) {
-      case TileType.Flag:
-        return '#31ffe0'
       case TileType.Reveal:
-        return '#fff6bd'
+        return revealBackgroundColour
+      case TileType.Flag:
       case TileType.Hidden:
-        return '#31ffe0'
+        return hiddenBackgroundColour
       default:
         return 'transparent'
+    }
+  }
+
+  const getHoverBackground = (): string => {
+    switch (tileState) {
+      case TileType.Reveal:
+        return revealBackgroundColour
+      case TileType.Flag:
+      case TileType.Hidden:
+        return hoverBackgroundColour
+      default:
+        return 'transparent'
+    }
+  }
+
+  const getHoverCursor = (): string => {
+    switch (tileState) {
+      case TileType.Reveal:
+      case TileType.Flag:
+      case TileType.Hidden:
+        return 'pointer'
+      default:
+        return 'auto'
     }
   }
 
@@ -109,6 +156,29 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
     return `${topLeft} ${topRight} ${bottomRight} ${bottomLeft}`
   }
 
+  const getTextColour = () => {
+    switch (tile?.adjacentMines) {
+      case 1:
+        return mineColour1
+      case 2:
+        return mineColour2
+      case 3:
+        return mineColour3
+      case 4:
+        return mineColour4
+      case 5:
+        return mineColour5
+      case 6:
+        return mineColour6
+      case 7:
+        return mineColour7
+      case 8:
+        return mineColour8
+      default:
+        return 'black'
+    }
+  }
+
   useEffect(() => {
     if (tile) {
       setTileState(tile.isFlagged ? TileType.Flag : tile.isRevealed ? TileType.Reveal : TileType.Hidden)
@@ -119,7 +189,13 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
 
   return (
     <TileWrapper $border={getBorder()}>
-      <TileContent $background={getBackground()} $borderRadius={getBorderRadius(neighbourTypes)}>
+      <TileContent
+        $textColour={getTextColour()}
+        $background={getBackground()}
+        $hoverBackground={getHoverBackground()}
+        $borderRadius={getBorderRadius(neighbourTypes)}
+        $hoverCursor={getHoverCursor()}
+      >
         {getTileSymbol()}
       </TileContent>
     </TileWrapper>
