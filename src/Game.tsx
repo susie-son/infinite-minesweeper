@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import BoardComponent, { Board, Position } from './Board'
 import React from 'react'
 import { Tile } from './Tile'
 import styled from 'styled-components'
+import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const GameWrapper = styled.div`
   background: #6ec4c6;
@@ -11,6 +12,7 @@ const GameWrapper = styled.div`
 const Game = () => {
   const [board, setBoard] = useState(new Board())
   const [mouseButtons, setMouseButtons] = useState(0)
+  const transformComponentRef = useRef<ReactZoomPanPinchRef>(null)
 
   // Returns whether a mine should be generated based on position
   const generateMine = (position: Position): boolean => {
@@ -218,9 +220,33 @@ const Game = () => {
     }
   }
 
+  const resetPosition = () => {
+    if (transformComponentRef.current) {
+      const { resetTransform } = transformComponentRef.current
+      resetTransform()
+    }
+    // TODO: create a button to reset position
+  }
+
   return (
     <GameWrapper>
-      <BoardComponent board={board} handleTileMouseDown={handleTileMouseDown} handleTileMouseUp={handleTileMouseUp} />
+      <TransformWrapper
+        ref={transformComponentRef}
+        limitToBounds={false}
+        minScale={0.5}
+        maxScale={2}
+        panning={{ allowLeftClickPan: false, allowRightClickPan: false }}
+        pinch={{ disabled: true }}
+        doubleClick={{ disabled: true }}
+      >
+        <TransformComponent>
+          <BoardComponent
+            board={board}
+            handleTileMouseDown={handleTileMouseDown}
+            handleTileMouseUp={handleTileMouseUp}
+          />
+        </TransformComponent>
+      </TransformWrapper>
     </GameWrapper>
   )
 }

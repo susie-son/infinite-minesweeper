@@ -86,15 +86,15 @@ export class Board {
 
 const BoardWrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  flex-direction: column;
 `
 
 const RowWrapper = styled.div`
   display: flex;
-  flex-direction: row;
 `
 
 interface BoardComponentProps {
