@@ -94,7 +94,7 @@ const BoardWrapper = styled.div`
 
 const RowWrapper = styled.div`
   display: flex;
-  flexdirection: row;
+  flex-direction: row;
 `
 
 interface BoardComponentProps {

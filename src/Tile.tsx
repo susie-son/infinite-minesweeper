@@ -28,7 +28,6 @@ interface TileWrapperProps {
 const TileWrapper = styled.div<TileWrapperProps>`
   width: 50px;
   height: 50px;
-  user-select: none;
   padding: 0px;
   border: ${(props) => props.$border};
 `
