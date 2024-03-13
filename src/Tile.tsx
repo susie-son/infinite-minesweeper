@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import {
   borderColour,
@@ -13,7 +13,7 @@ import {
   mineColour7,
   mineColour8,
   revealBackgroundColour
-} from './colours'
+} from './constants'
 
 export class Tile {
   isRevealed: boolean
@@ -137,7 +137,6 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
 
   const getHoverCursor = (): string => {
     switch (tileState) {
-      case TileType.Reveal:
       case TileType.Flag:
       case TileType.Hidden:
         return 'pointer'

@@ -4,6 +4,7 @@ import React from 'react'
 import { Tile } from './Tile'
 import styled from 'styled-components'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
+import { distanceCap, maxProbability, minProbability } from './constants'
 
 const GameWrapper = styled.div`
   position: relative;
@@ -22,6 +23,7 @@ const ScoreWrapper = styled.div`
   padding: 50px;
   background: rgba(0, 0, 0, 0.1);
   z-index: 2;
+  cursor: pointer;
 `
 
 const Game = () => {
@@ -33,9 +35,17 @@ const Game = () => {
   // Returns whether a mine should be generated based on position
   const generateMine = (position: Position): boolean => {
     const { row, col } = position
+
+    // Calculate the distance from the origin
+    const distance = Math.sqrt(row ** 2 + col ** 2)
+
     // Avoid placing mines too close to the origin
-    if (row ** 2 + col ** 2 <= 2) return false
-    return Math.random() < 0.2
+    if (distance <= Math.sqrt(2)) return false
+
+    // Calculate probability based on distance
+    let probability =
+      minProbability + (Math.min(distance, distanceCap) / distanceCap) * (maxProbability - minProbability)
+    return Math.random() < probability
   }
 
   const handleTileMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
@@ -241,7 +251,6 @@ const Game = () => {
       const { resetTransform } = transformComponentRef.current
       resetTransform()
     }
-    // TODO: create a button to reset position
   }
 
   useEffect(() => {
@@ -250,7 +259,7 @@ const Game = () => {
 
   return (
     <GameWrapper>
-      <ScoreWrapper>{score}</ScoreWrapper>
+      <ScoreWrapper onClick={resetPosition}>{score}</ScoreWrapper>
       <TransformWrapper
         ref={transformComponentRef}
         limitToBounds={false}
