@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import BoardComponent, { Board, Position } from './Board'
 import React from 'react'
 import { Tile } from './Tile'
@@ -6,13 +6,29 @@ import styled from 'styled-components'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 const GameWrapper = styled.div`
+  position: relative;
   background: linear-gradient(to right bottom, #e4f9fd, #cdecff, #f2e2ff);
+`
+
+const ScoreWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: 'Madimi One', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 70pt;
+  color: white;
+  padding: 50px;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 2;
 `
 
 const Game = () => {
   const [board, setBoard] = useState(new Board())
   const [mouseButtons, setMouseButtons] = useState(0)
   const transformComponentRef = useRef<ReactZoomPanPinchRef>(null)
+  const [score, setScore] = useState(0)
 
   // Returns whether a mine should be generated based on position
   const generateMine = (position: Position): boolean => {
@@ -228,8 +244,13 @@ const Game = () => {
     // TODO: create a button to reset position
   }
 
+  useEffect(() => {
+    setScore(board.getScore())
+  })
+
   return (
     <GameWrapper>
+      <ScoreWrapper>{score}</ScoreWrapper>
       <TransformWrapper
         ref={transformComponentRef}
         limitToBounds={false}

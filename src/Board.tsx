@@ -82,6 +82,20 @@ export class Board {
 
     return neighbours
   }
+
+  getScore(): number {
+    let score = 0
+    for (let r = this.minRow; r <= this.maxRow; r++) {
+      for (let c = this.minCol; c <= this.maxCol; c++) {
+        const position = new Position(r, c)
+        const tile = this.getTile(position)
+        if (tile && tile.isRevealed && !tile.isMine()) {
+          score += tile.adjacentMines
+        }
+      }
+    }
+    return score
+  }
 }
 
 const BoardWrapper = styled.div`
@@ -91,6 +105,7 @@ const BoardWrapper = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  z-index: 1;
 `
 
 const RowWrapper = styled.div`
