@@ -186,7 +186,7 @@ const Game = () => {
       return
     }
 
-    // Count the number of adjacent flagged tiles
+    // Count the number of adjacent flagged tiles and revealed mines
     let flaggedAdjacent = 0
     offsets.forEach((i) => {
       offsets.forEach((j) => {
@@ -195,7 +195,7 @@ const Game = () => {
           const newCol = col + j
           const newPosition = new Position(newRow, newCol)
           const newTile = board.getTile(newPosition)
-          if (newTile && newTile.isFlagged) {
+          if (newTile && (newTile.isFlagged || (newTile.isRevealed && newTile.isMine()))) {
             flaggedAdjacent++
           }
         }
