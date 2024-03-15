@@ -33,6 +33,14 @@ export class Tile {
   isEmpty(): boolean {
     return this.adjacentMines === 0
   }
+
+  clone(): Tile {
+    const newTile = new Tile()
+    newTile.isRevealed = this.isRevealed
+    newTile.isFlagged = this.isFlagged
+    newTile.adjacentMines = this.adjacentMines
+    return newTile
+  }
 }
 
 interface TileWrapperProps {

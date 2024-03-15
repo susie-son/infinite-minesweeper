@@ -57,18 +57,19 @@ const Game = () => {
 
   const handleTileMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
     if (mouseButtons === 1 && e.buttons === 0) {
-      revealTile(row, col)
+      setBoard((prevBoard) => {
+        return revealTile(prevBoard, row, col)
+      })
     } else if (mouseButtons === 3) {
       handleChord(row, col)
     }
     setMouseButtons(0)
   }
 
-  const expandBoard = (board: Board, row: number, col: number) => {
-    let newBoard: Board = Object.assign(board)
-    let queue: Position[] = []
-
-    let offsets = [-1, 0, 1]
+  const expandBoard = (prevBoard: Board, row: number, col: number): Board => {
+    const newBoard = prevBoard.clone()
+    const queue: Position[] = []
+    const offsets = [-1, 0, 1]
 
     // Iterate through neighbouring tiles
     offsets.forEach((i) => {
@@ -118,15 +119,15 @@ const Game = () => {
     return newBoard
   }
 
-  const revealAdjacentTiles = (board: Board, row: number, col: number): Board => {
-    let newBoard: Board = Object.assign(board)
-    let queue = [[row, col]]
+  const revealAdjacentTiles = (prevBoard: Board, row: number, col: number): Board => {
+    let newBoard = prevBoard.clone()
+    const queue: [number, number][] = [[row, col]]
 
     // BFS to reveal all connected empty tiles
-    while (queue.length) {
-      let [currentRow, currentCol] = queue.shift()!
-
-      let offsets = [-1, 0, 1]
+    let current: [number, number] | undefined
+    while ((current = queue.shift()) !== undefined) {
+      const [currentRow, currentCol] = current
+      const offsets = [-1, 0, 1]
 
       // Check adjacent tiles for expansion
       offsets.forEach((i) => {
@@ -159,17 +160,15 @@ const Game = () => {
     return newBoard
   }
 
-  const revealTile = (row: number, col: number) => {
+  const revealTile = (prevBoard: Board, row: number, col: number): Board => {
     const position = new Position(row, col)
-    const tile = board.getTile(position)
+    let newBoard = expandBoard(prevBoard, row, col)
+    const tile = newBoard.getTile(position)
 
     // If the tile is already revealed or is flagged, then do nothing
     if (!tile || tile.isRevealed || tile.isFlagged) {
-      return
+      return prevBoard
     }
-
-    let newBoard: Board = Object.assign(board)
-    newBoard = expandBoard(newBoard, row, col)
 
     // Reveal the clicked tile
     tile.isRevealed = true
@@ -182,68 +181,74 @@ const Game = () => {
       newBoard = revealAdjacentTiles(newBoard, row, col)
     }
 
-    setBoard(newBoard)
+    return newBoard
   }
 
   const toggleFlag = (row: number, col: number) => {
     const position = new Position(row, col)
 
-    // If the tile is revealed, then do nothing
-    const tile = board.getTile(position)
-    if (!tile || tile.isRevealed) {
-      return
-    }
+    setBoard((prevBoard) => {
+      const newBoard = prevBoard.clone()
+      const tile = newBoard.getTile(position)
+      // If the tile is revealed, then do nothing
+      if (!tile || tile.isRevealed) {
+        return prevBoard
+      }
 
-    let newBoard: Board = Object.assign(board)
-    tile.isFlagged = !tile.isFlagged
-    newBoard.addTile(position, tile)
+      tile.isFlagged = !tile.isFlagged
+      newBoard.addTile(position, tile)
 
-    setBoard(newBoard)
+      return newBoard
+    })
   }
 
   const handleChord = (row: number, col: number) => {
     const position = new Position(row, col)
-    const tile = board.getTile(position)
 
-    const offsets = [-1, 0, 1]
+    setBoard((prevBoard) => {
+      let newBoard = prevBoard.clone()
+      const tile = newBoard.getTile(position)
+      const offsets = [-1, 0, 1]
 
-    // If the tile doesn't exist or is not revealed, then do nothing
-    if (!tile || !tile.isRevealed) {
-      return
-    }
+      // If the tile doesn't exist or is not revealed, then do nothing
+      if (!tile || !tile.isRevealed) {
+        return prevBoard
+      }
 
-    // Count the number of adjacent flagged tiles and revealed mines
-    let flaggedAdjacent = 0
-    offsets.forEach((i) => {
-      offsets.forEach((j) => {
-        if (i !== 0 || j !== 0) {
-          const newRow = row + i
-          const newCol = col + j
-          const newPosition = new Position(newRow, newCol)
-          const newTile = board.getTile(newPosition)
-          if (newTile && (newTile.isFlagged || (newTile.isRevealed && newTile.isMine()))) {
-            flaggedAdjacent++
-          }
-        }
-      })
-    })
-
-    // If the number of adjacent flags matches the number of adjacent mines, reveal adjacent tiles
-    if (flaggedAdjacent === tile.adjacentMines) {
+      // Count the number of adjacent flagged tiles and revealed mines
+      let flaggedAdjacent = 0
       offsets.forEach((i) => {
         offsets.forEach((j) => {
           if (i !== 0 || j !== 0) {
             const newRow = row + i
             const newCol = col + j
             const newPosition = new Position(newRow, newCol)
-            const newTile = board.getTile(newPosition)
-            if (newTile && !newTile.isRevealed && !newTile.isFlagged) {
-              revealTile(newRow, newCol)
+            const newTile = newBoard.getTile(newPosition)
+            if (newTile && (newTile.isFlagged || (newTile.isRevealed && newTile.isMine()))) {
+              flaggedAdjacent++
             }
           }
         })
       })
-    }
+
+      // If the number of adjacent flags matches the number of adjacent mines, reveal adjacent tiles
+      if (flaggedAdjacent === tile.adjacentMines) {
+        offsets.forEach((i) => {
+          offsets.forEach((j) => {
+            if (i !== 0 || j !== 0) {
+              const newRow = row + i
+              const newCol = col + j
+              const newPosition = new Position(newRow, newCol)
+              const newTile = newBoard.getTile(newPosition)
+              if (newTile && !newTile.isRevealed && !newTile.isFlagged) {
+                newBoard = revealTile(newBoard, newRow, newCol)
+              }
+            }
+          })
+        })
+      }
+      return newBoard
+    })
   }
 
   const resetPosition = () => {
@@ -255,7 +260,7 @@ const Game = () => {
 
   useEffect(() => {
     setScore(board.getScore())
-  })
+  }, [board])
 
   return (
     <GameWrapper>

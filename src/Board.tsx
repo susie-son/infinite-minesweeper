@@ -11,6 +11,13 @@ export class Position {
     this.col = col
   }
 
+  static getPosition(key: string): Position {
+    const split = key.split('_')
+    const row = parseInt(split[0])
+    const col = parseInt(split[1])
+    return new Position(row, col)
+  }
+
   getKey(): string {
     return `${this.row}_${this.col}`
   }
@@ -21,7 +28,7 @@ export class Board {
   maxRow: number
   minCol: number
   maxCol: number
-  map: Map<String, Tile>
+  map: Map<string, Tile>
 
   // Create starting tile at the origin
   constructor() {
@@ -95,6 +102,15 @@ export class Board {
       }
     }
     return score
+  }
+
+  clone(): Board {
+    const newBoard = new Board()
+    this.map.forEach((value, key) => {
+      const tile = value.clone()
+      newBoard.addTile(Position.getPosition(key), tile)
+    })
+    return newBoard
   }
 }
 
