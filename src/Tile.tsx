@@ -60,6 +60,7 @@ interface TileContentProps {
   $hoverBackground: string
   $borderRadius: string
   $hoverCursor: string
+  $animation: string
 }
 
 const TileContent = styled.div<TileContentProps>`
@@ -74,13 +75,27 @@ const TileContent = styled.div<TileContentProps>`
   font-weight: 400;
   font-style: normal;
   font-size: 20pt;
+  transition:
+    background-color 0.3s ease,
+    transform 0.5s;
   &:hover {
     background: ${(props) => props.$hoverBackground};
     cursor: ${(props) => props.$hoverCursor};
   }
-  transition: transform 0.2s;
   &:active {
     transform: scale(0.95);
+  }
+  animation: ${(props) => props.$animation};
+  @keyframes bounce {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 `
 
@@ -94,6 +109,7 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
   const background = tile ? (tile.isRevealed ? revealBackgroundColour : hiddenBackgroundColour) : 'transparent'
   const hoverBackground = tile ? (tile.isRevealed ? revealBackgroundColour : hoverBackgroundColour) : 'transparent'
   const hoverCursor = tile && (tile.isFlagged || tile.isRevealed) ? 'pointer' : 'auto'
+  const animation = tile && tile.isFlagged ? 'bounce 0.5s ease' : 'none'
 
   const getTileSymbol = () => {
     if (tile) {
@@ -147,6 +163,7 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
         $hoverBackground={hoverBackground}
         $borderRadius={getBorderRadius(neighbourTypes)}
         $hoverCursor={hoverCursor}
+        $animation={animation}
       >
         {getTileSymbol()}
       </TileContent>

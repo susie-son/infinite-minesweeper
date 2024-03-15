@@ -20,20 +20,27 @@ const ScoreWrapper = styled.div`
   font-style: normal;
   font-size: 70pt;
   color: white;
-  padding: 50px;
+  padding: 20px;
+  margin: 50px;
   background: rgba(0, 0, 0, 0.1);
   z-index: 2;
   cursor: pointer;
+  border-radius: 50px;
+  min-width: 150px;
+  text-align: center;
 `
 
 const Game = () => {
-  const [board, setBoard] = useState(() => new Board())
+  const [board, setBoard] = useState(() => {
+    let newBoard = new Board()
+    return revealTile(newBoard, 0, 0)
+  })
   const [mouseButtons, setMouseButtons] = useState(0)
   const transformComponentRef = useRef<ReactZoomPanPinchRef>(null)
   const score = useMemo(() => board.getScore(), [board])
 
   // Returns whether a mine should be generated based on position
-  const generateMine = (position: Position): boolean => {
+  function generateMine(position: Position): boolean {
     const { row, col } = position
 
     // Calculate the distance from the origin
@@ -48,7 +55,7 @@ const Game = () => {
     return Math.random() < probability
   }
 
-  const expandBoard = (prevBoard: Board, row: number, col: number): Board => {
+  function expandBoard(prevBoard: Board, row: number, col: number): Board {
     const newBoard = prevBoard.clone()
     const queue: Position[] = []
     const offsets = [-1, 0, 1]
@@ -101,7 +108,7 @@ const Game = () => {
     return newBoard
   }
 
-  const revealAdjacentTiles = (prevBoard: Board, row: number, col: number): Board => {
+  function revealAdjacentTiles(prevBoard: Board, row: number, col: number): Board {
     let newBoard = prevBoard.clone()
     const queue: [number, number][] = [[row, col]]
 
@@ -142,7 +149,7 @@ const Game = () => {
     return newBoard
   }
 
-  const revealTile = (prevBoard: Board, row: number, col: number): Board => {
+  function revealTile(prevBoard: Board, row: number, col: number): Board {
     const position = new Position(row, col)
     let newBoard = expandBoard(prevBoard, row, col)
     const tile = newBoard.getTile(position)
@@ -265,12 +272,6 @@ const Game = () => {
       resetTransform()
     }
   }
-
-  useEffect(() => {
-    setBoard((prevBoard) => {
-      return revealTile(prevBoard, 0, 0)
-    })
-  }, [])
 
   return (
     <GameWrapper>

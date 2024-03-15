@@ -147,6 +147,25 @@ const RowWrapper = styled.div`
   display: flex;
 `
 
+interface TileWrapperProps {
+  $delay: number
+}
+
+const TileWrapper = styled.div.attrs<TileWrapperProps>((props) => ({
+  style: {
+    animation: `fadeIn 0.5s ease-out ${props.$delay}ms backwards`
+  }
+}))`
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`
+
 interface BoardComponentProps {
   board: Board
   handleTileMouseDown: (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => void
@@ -164,18 +183,20 @@ const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: Board
           <RowWrapper key={adjustedRowIndex}>
             {row.map((tile, colIndex) => {
               const adjustedColIndex = colIndex + board.minCol
+              const delay = (rowIndex * grid.length + colIndex) * 2
               return (
-                <div
+                <TileWrapper
                   key={adjustedColIndex}
                   onMouseDown={(e) => handleTileMouseDown(e, adjustedRowIndex, adjustedColIndex)}
                   onMouseUp={(e) => handleTileMouseUp(e, adjustedRowIndex, adjustedColIndex)}
                   onContextMenu={(e) => e.preventDefault()}
+                  $delay={delay}
                 >
                   <TileComponent
                     tile={tile}
                     neighbourTypes={board.getNeighbourTypes(adjustedRowIndex, adjustedColIndex)}
                   />
-                </div>
+                </TileWrapper>
               )
             })}
           </RowWrapper>
