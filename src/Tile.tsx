@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo } from 'react'
 import styled from 'styled-components'
 import {
   borderColour,
@@ -84,20 +84,16 @@ const TileContent = styled.div<TileContentProps>`
   }
 `
 
-export enum TileType {
-  Reveal,
-  Hidden,
-  Flag,
-  None
-}
-
 interface TileComponentProps {
   tile: Tile | undefined
   neighbourTypes: boolean[]
 }
 
 const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
-  const [tileState, setTileState] = useState(TileType.None)
+  const border = tile && tile.isRevealed ? `1px groove ${borderColour}` : '1px solid transparent'
+  const background = tile ? (tile.isRevealed ? revealBackgroundColour : hiddenBackgroundColour) : 'transparent'
+  const hoverBackground = tile ? (tile.isRevealed ? revealBackgroundColour : hoverBackgroundColour) : 'transparent'
+  const hoverCursor = tile && (tile.isFlagged || tile.isRevealed) ? 'pointer' : 'auto'
 
   const getTileSymbol = () => {
     if (tile) {
@@ -110,49 +106,6 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
     return ''
   }
 
-  const getBorder = (): string => {
-    switch (tileState) {
-      case TileType.Reveal:
-        return `1px groove ${borderColour}`
-      default:
-        return '1px solid transparent'
-    }
-  }
-
-  const getBackground = (): string => {
-    switch (tileState) {
-      case TileType.Reveal:
-        return revealBackgroundColour
-      case TileType.Flag:
-      case TileType.Hidden:
-        return hiddenBackgroundColour
-      default:
-        return 'transparent'
-    }
-  }
-
-  const getHoverBackground = (): string => {
-    switch (tileState) {
-      case TileType.Reveal:
-        return revealBackgroundColour
-      case TileType.Flag:
-      case TileType.Hidden:
-        return hoverBackgroundColour
-      default:
-        return 'transparent'
-    }
-  }
-
-  const getHoverCursor = (): string => {
-    switch (tileState) {
-      case TileType.Flag:
-      case TileType.Hidden:
-        return 'pointer'
-      default:
-        return 'auto'
-    }
-  }
-
   const getBorderRadius = (neighbourTypes: boolean[]): string => {
     let borderRadius = '20px'
     let topLeft = [0, 1, 3].every((i) => neighbourTypes[i]) ? borderRadius : '0px'
@@ -163,8 +116,8 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
     return `${topLeft} ${topRight} ${bottomRight} ${bottomLeft}`
   }
 
-  const getTextColour = () => {
-    switch (tile?.adjacentMines) {
+  const getTextColour = (adjacentMines: number) => {
+    switch (adjacentMines) {
       case 1:
         return mineColour1
       case 2:
@@ -186,22 +139,14 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
     }
   }
 
-  useEffect(() => {
-    if (tile) {
-      setTileState(tile.isFlagged ? TileType.Flag : tile.isRevealed ? TileType.Reveal : TileType.Hidden)
-    } else {
-      setTileState(TileType.None)
-    }
-  }, [tile, tile?.isRevealed, tile?.isFlagged])
-
   return (
-    <TileWrapper $border={getBorder()}>
+    <TileWrapper $border={border}>
       <TileContent
-        $textColour={getTextColour()}
-        $background={getBackground()}
-        $hoverBackground={getHoverBackground()}
+        $textColour={getTextColour(tile ? tile.adjacentMines : 0)}
+        $background={background}
+        $hoverBackground={hoverBackground}
         $borderRadius={getBorderRadius(neighbourTypes)}
-        $hoverCursor={getHoverCursor()}
+        $hoverCursor={hoverCursor}
       >
         {getTileSymbol()}
       </TileContent>
@@ -209,4 +154,4 @@ const TileComponent = ({ tile, neighbourTypes }: TileComponentProps) => {
   )
 }
 
-export default TileComponent
+export default memo(TileComponent)

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import TileComponent, { Tile } from './Tile'
 
@@ -30,6 +30,9 @@ export class Board {
   maxCol: number
   map: Map<string, Tile>
 
+  private gridCache: (Tile | undefined)[][] | null = null
+  private neighbourCache = new Map<string, boolean[]>()
+
   // Create starting tile at the origin
   constructor() {
     this.minRow = 0
@@ -58,6 +61,10 @@ export class Board {
   }
 
   generateGrid(): (Tile | undefined)[][] {
+    if (this.gridCache) {
+      return this.gridCache
+    }
+
     let grid = Array<Array<Tile | undefined>>()
 
     for (let r = this.minRow; r <= this.maxRow; r++) {
@@ -73,7 +80,19 @@ export class Board {
     return grid
   }
 
+  invalidateCache() {
+    this.gridCache = null
+    this.neighbourCache.clear()
+  }
+
   getNeighbourTypes(row: number, col: number): boolean[] {
+    const position = new Position(row, col)
+    const key = position.getKey()
+
+    if (this.neighbourCache.has(key)) {
+      return this.neighbourCache.get(key)!
+    }
+
     let neighbours: boolean[] = []
     const offsets = [-1, 0, 1]
 
@@ -135,7 +154,7 @@ interface BoardComponentProps {
 }
 
 const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: BoardComponentProps) => {
-  const grid: (Tile | undefined)[][] = board.generateGrid()
+  const grid = useMemo(() => board.generateGrid(), [board])
 
   return (
     <BoardWrapper>

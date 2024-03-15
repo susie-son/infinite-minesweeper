@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BoardComponent, { Board, Position } from './Board'
 import React from 'react'
 import { Tile } from './Tile'
@@ -27,10 +27,10 @@ const ScoreWrapper = styled.div`
 `
 
 const Game = () => {
-  const [board, setBoard] = useState(new Board())
+  const [board, setBoard] = useState(() => new Board())
   const [mouseButtons, setMouseButtons] = useState(0)
   const transformComponentRef = useRef<ReactZoomPanPinchRef>(null)
-  const [score, setScore] = useState(0)
+  const score = useMemo(() => board.getScore(), [board])
 
   // Returns whether a mine should be generated based on position
   const generateMine = (position: Position): boolean => {
@@ -46,24 +46,6 @@ const Game = () => {
     let probability =
       minProbability + (Math.min(distance, distanceCap) / distanceCap) * (maxProbability - minProbability)
     return Math.random() < probability
-  }
-
-  const handleTileMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
-    if (e.buttons === 2) {
-      toggleFlag(row, col)
-    }
-    setMouseButtons(e.buttons)
-  }
-
-  const handleTileMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
-    if (mouseButtons === 1 && e.buttons === 0) {
-      setBoard((prevBoard) => {
-        return revealTile(prevBoard, row, col)
-      })
-    } else if (mouseButtons === 3) {
-      handleChord(row, col)
-    }
-    setMouseButtons(0)
   }
 
   const expandBoard = (prevBoard: Board, row: number, col: number): Board => {
@@ -115,7 +97,7 @@ const Game = () => {
         tile.adjacentMines = mineCount
       }
     })
-
+    newBoard.invalidateCache()
     return newBoard
   }
 
@@ -173,6 +155,7 @@ const Game = () => {
     // Reveal the clicked tile
     tile.isRevealed = true
     newBoard.addTile(position, tile)
+    newBoard.invalidateCache()
 
     if (tile.isMine()) {
       // TODO: Handle the "game over" scenario
@@ -197,6 +180,7 @@ const Game = () => {
 
       tile.isFlagged = !tile.isFlagged
       newBoard.addTile(position, tile)
+      newBoard.invalidateCache()
 
       return newBoard
     })
@@ -251,6 +235,30 @@ const Game = () => {
     })
   }
 
+  const handleTileMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
+      if (e.buttons === 2) {
+        toggleFlag(row, col)
+      }
+      setMouseButtons(e.buttons)
+    },
+    [toggleFlag, setMouseButtons]
+  )
+
+  const handleTileMouseUp = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>, row: number, col: number) => {
+      if (mouseButtons === 1 && e.buttons === 0) {
+        setBoard((prevBoard) => {
+          return revealTile(prevBoard, row, col)
+        })
+      } else if (mouseButtons === 3) {
+        handleChord(row, col)
+      }
+      setMouseButtons(0)
+    },
+    [setBoard, revealTile, handleChord, setMouseButtons]
+  )
+
   const resetPosition = () => {
     if (transformComponentRef.current) {
       const { resetTransform } = transformComponentRef.current
@@ -259,8 +267,10 @@ const Game = () => {
   }
 
   useEffect(() => {
-    setScore(board.getScore())
-  }, [board])
+    setBoard((prevBoard) => {
+      return revealTile(prevBoard, 0, 0)
+    })
+  }, [])
 
   return (
     <GameWrapper>
