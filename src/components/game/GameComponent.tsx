@@ -1,36 +1,15 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import BoardComponent, { Board, Position } from './Board'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import BoardComponent from '../board/BoardComponent'
+import { Board } from '../../Board'
+import { Position } from '../../Position'
 import React from 'react'
-import { Tile } from './Tile'
-import styled from 'styled-components'
+import { Tile } from '../../Tile'
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
-import { distanceCap, maxProbability, minProbability } from './constants'
+import { DISTANCE_MINE_CAP, PROBABILITY_MINE_MAX, PROBABILITY_MINE_MIN } from '../../constants'
+import { GameWrapper } from './GameWrapper'
+import { ScoreWrapper } from './ScoreWrapper'
 
-const GameWrapper = styled.div`
-  position: relative;
-  background: linear-gradient(to right bottom, #e4f9fd, #cdecff, #f2e2ff);
-`
-
-const ScoreWrapper = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-family: 'Madimi One', sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  font-size: 70pt;
-  color: white;
-  padding: 20px;
-  margin: 50px;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 2;
-  cursor: pointer;
-  border-radius: 50px;
-  min-width: 150px;
-  text-align: center;
-`
-
-const Game = () => {
+const GameComponent = () => {
   const [board, setBoard] = useState(() => {
     let newBoard = new Board()
     return revealTile(newBoard, 0, 0)
@@ -51,7 +30,8 @@ const Game = () => {
 
     // Calculate probability based on distance
     let probability =
-      minProbability + (Math.min(distance, distanceCap) / distanceCap) * (maxProbability - minProbability)
+      PROBABILITY_MINE_MIN +
+      (Math.min(distance, DISTANCE_MINE_CAP) / DISTANCE_MINE_CAP) * (PROBABILITY_MINE_MAX - PROBABILITY_MINE_MIN)
     return Math.random() < probability
   }
 
@@ -297,4 +277,4 @@ const Game = () => {
   )
 }
 
-export default Game
+export default GameComponent

@@ -1,5 +1,5 @@
 import { createGlobalStyle } from 'styled-components'
-import Game from './Game'
+import GameComponent from './components/game/GameComponent'
 
 const GlobalStyle = createGlobalStyle`
   html, body {
@@ -16,7 +16,7 @@ const App = () => {
   return (
     <>
       <GlobalStyle />
-      <Game />
+      <GameComponent />
     </>
   )
 }
