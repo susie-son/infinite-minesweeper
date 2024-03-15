@@ -1,3 +1,5 @@
+import { MINE_VALUE } from './constants'
+
 export class Tile {
   isRevealed: boolean
   isFlagged: boolean
@@ -10,7 +12,7 @@ export class Tile {
   }
 
   isMine(): boolean {
-    return this.adjacentMines === 9
+    return this.adjacentMines === MINE_VALUE
   }
 
   isEmpty(): boolean {

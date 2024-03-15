@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { memo, useEffect, useMemo, useRef } from 'react'
 import TileComponent from '../tile/TileComponent'
 import { Board } from '../../Board'
 import { BoardWrapper } from './BoardWrapper'
 import { RowWrapper } from './RowWrapper'
+import { ANIMATION_REVEAL_DELAY_MULTIPLIER } from '../../constants'
 
 interface BoardComponentProps {
   board: Board
@@ -19,7 +20,7 @@ const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: Board
       firstRender.current = false
       return
     }
-  })
+  }, [])
 
   return (
     <BoardWrapper>
@@ -29,10 +30,12 @@ const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: Board
           <RowWrapper key={adjustedRowIndex}>
             {row.map((tile, colIndex) => {
               const adjustedColIndex = colIndex + board.minCol
-              const delay = firstRender.current ? (rowIndex * grid.length + colIndex) * 2 : 0
+              const delay = firstRender.current
+                ? (rowIndex * grid.length + colIndex) * ANIMATION_REVEAL_DELAY_MULTIPLIER
+                : 0
               return (
                 <TileComponent
-                  key={`${adjustedColIndex}-${adjustedColIndex}`}
+                  key={`${adjustedRowIndex}-${adjustedColIndex}`}
                   tile={tile}
                   neighbourTypes={board.getNeighbourTypes(adjustedRowIndex, adjustedColIndex)}
                   handleTileMouseDown={handleTileMouseDown}
@@ -50,4 +53,4 @@ const BoardComponent = ({ board, handleTileMouseDown, handleTileMouseUp }: Board
   )
 }
 
-export default BoardComponent
+export default memo(BoardComponent)

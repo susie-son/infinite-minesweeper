@@ -22,7 +22,7 @@ export class Board {
     this.addTile(new Position(0, 0), new Tile())
   }
 
-  addTile(position: Position, tile: Tile) {
+  addTile(position: Position, tile: Tile): void {
     this.minRow = Math.min(this.minRow, position.row)
     this.maxRow = Math.max(this.maxRow, position.row)
     this.minCol = Math.min(this.minCol, position.col)
@@ -58,7 +58,7 @@ export class Board {
     return grid
   }
 
-  invalidateCache() {
+  invalidateCache(): void {
     this.gridCache = null
     this.neighbourCache.clear()
   }

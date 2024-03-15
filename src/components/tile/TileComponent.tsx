@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import {
   COLOUR_BORDER,
-  COLOR_BACKGROUND_HIDDEN,
+  COLOUR_BACKGROUND_HIDDEN,
   COLOUR_BACKGROUND_HOVER,
   COLOUR_MINE_1,
   COLOUR_MINE_2,
@@ -11,7 +11,9 @@ import {
   COLOUR_MINE_6,
   COLOUR_MINE_7,
   COLOUR_MINE_8,
-  COLOUR_BACKGROUND_REVEAL
+  COLOUR_BACKGROUND_REVEAL,
+  SYMBOL_FLAG,
+  SYMBOL_MINE
 } from '../../constants'
 import { Tile } from '../../Tile'
 import { TileWrapper } from './TileWrapper'
@@ -37,16 +39,16 @@ const TileComponent = ({
   adjustedColIndex
 }: TileComponentProps) => {
   const border = tile && tile.isRevealed ? `1px groove ${COLOUR_BORDER}` : '1px solid transparent'
-  const background = tile ? (tile.isRevealed ? COLOUR_BACKGROUND_REVEAL : COLOR_BACKGROUND_HIDDEN) : 'transparent'
+  const background = tile ? (tile.isRevealed ? COLOUR_BACKGROUND_REVEAL : COLOUR_BACKGROUND_HIDDEN) : 'transparent'
   const hoverBackground = tile ? (tile.isRevealed ? COLOUR_BACKGROUND_REVEAL : COLOUR_BACKGROUND_HOVER) : 'transparent'
-  const hoverCursor = tile && (tile.isFlagged || tile.isRevealed) ? 'pointer' : 'auto'
+  const hoverCursor = tile && (tile.isFlagged || !tile.isRevealed) ? 'pointer' : 'auto'
   const animation = tile && tile.isFlagged ? 'bounce 0.5s ease' : 'none'
 
   const getTileSymbol = () => {
     if (tile) {
-      if (tile.isFlagged) return '🚩'
+      if (tile.isFlagged) return SYMBOL_FLAG
       if (tile.isRevealed) {
-        if (tile.isMine()) return '💔'
+        if (tile.isMine()) return SYMBOL_MINE
         if (!tile.isEmpty()) return tile.adjacentMines
       }
     }
